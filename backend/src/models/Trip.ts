@@ -42,12 +42,24 @@ export interface IPackingItem {
   packed: boolean;
 }
 
+export interface ITransitExpenses {
+  flight: number;
+  train: number;
+  bus: number;
+  car: number;
+  visa: number;
+  visaRequired: boolean;
+  notes: string;
+}
+
 // --- Main Trip interface ---
 
 export interface ITrip extends Document {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   destination: string;
+  startingPoint: string;
+  currency: string;
   days: number;
   budgetType: "Low" | "Medium" | "High";
   interests: string[];
@@ -55,6 +67,7 @@ export interface ITrip extends Document {
   budget: IBudget;
   hotels: IHotel[];
   packingList: IPackingCategory[];
+  transitExpenses: ITransitExpenses;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -119,6 +132,19 @@ const packingCategorySchema = new Schema<IPackingCategory>(
   { _id: true }
 );
 
+const transitExpensesSchema = new Schema<ITransitExpenses>(
+  {
+    flight: { type: Number, default: 0 },
+    train: { type: Number, default: 0 },
+    bus: { type: Number, default: 0 },
+    car: { type: Number, default: 0 },
+    visa: { type: Number, default: 0 },
+    visaRequired: { type: Boolean, default: false },
+    notes: { type: String, default: "" },
+  },
+  { _id: false }
+);
+
 // --- Main Trip schema ---
 
 const tripSchema = new Schema<ITrip>(
@@ -132,6 +158,16 @@ const tripSchema = new Schema<ITrip>(
     destination: {
       type: String,
       required: [true, "Destination is required"],
+      trim: true,
+    },
+    startingPoint: {
+      type: String,
+      default: "Anywhere",
+      trim: true,
+    },
+    currency: {
+      type: String,
+      default: "INR",
       trim: true,
     },
     days: {
@@ -157,6 +193,10 @@ const tripSchema = new Schema<ITrip>(
     budget: budgetSchema,
     hotels: [hotelSchema],
     packingList: [packingCategorySchema],
+    transitExpenses: {
+      type: transitExpensesSchema,
+      default: () => ({}),
+    },
   },
   {
     timestamps: true,

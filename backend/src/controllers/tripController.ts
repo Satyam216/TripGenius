@@ -42,14 +42,33 @@ function extractTitle(dayObj: any): string {
 }
 
 /**
+ * Parse a cost value — handles numbers, strings like "$15", "₹500", "15 USD"
+ */
+function parseCost(val: any): number {
+  if (val === null || val === undefined) return 0;
+  if (typeof val === "number") return val;
+  if (typeof val === "string") {
+    // Remove currency symbols, commas, and whitespace
+    const cleaned = val.replace(/[$€£₹¥,\s]/g, "").replace(/[A-Za-z]+/g, "").trim();
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : num;
+  }
+  return 0;
+}
+
+/**
  * Normalize a single activity object — handles various key names
  */
 function normalizeActivity(act: any): any {
+  const costValue = act.estimatedCost ?? act.estimated_cost ?? act.cost ?? act.price ?? 
+    act.estimatedCostUSD ?? act.estimated_cost_usd ?? act.costUSD ?? act.cost_usd ?? 
+    act.priceUSD ?? act.amount ?? 0;
+
   return {
     time: act.time || act.timeSlot || act.time_slot || act.startTime || act.start_time || "TBD",
     activity: act.activity || act.name || act.title || act.place || act.location || "Activity",
     description: act.description || act.details || act.desc || act.notes || act.tip || "",
-    estimatedCost: parseFloat(act.estimatedCost ?? act.estimated_cost ?? act.cost ?? act.price ?? act.estimatedCostUSD ?? 0) || 0,
+    estimatedCost: parseCost(costValue),
   };
 }
 
@@ -76,12 +95,12 @@ function normalizeDay(dayObj: any, index: number): any {
 function normalizeBudget(budget: any): any {
   if (!budget) return { flights: 0, accommodation: 0, food: 0, activities: 0, transportation: 0, total: 0 };
 
-  const flights = parseFloat(budget.flights ?? budget.flight ?? budget.airfare ?? 0) || 0;
-  const accommodation = parseFloat(budget.accommodation ?? budget.hotel ?? budget.hotels ?? budget.lodging ?? budget.stay ?? 0) || 0;
-  const food = parseFloat(budget.food ?? budget.meals ?? budget.dining ?? budget.foodAndDining ?? budget.food_and_dining ?? 0) || 0;
-  const activities = parseFloat(budget.activities ?? budget.attractions ?? budget.sightseeing ?? budget.entertainment ?? 0) || 0;
-  const transportation = parseFloat(budget.transportation ?? budget.transport ?? budget.localTransport ?? budget.local_transport ?? budget.localTransportation ?? 0) || 0;
-  const total = parseFloat(budget.total ?? budget.totalBudget ?? budget.total_budget ?? budget.grandTotal ?? budget.totalEstimatedBudget ?? 0)
+  const flights = parseCost(budget.flights ?? budget.flight ?? budget.airfare ?? 0);
+  const accommodation = parseCost(budget.accommodation ?? budget.hotel ?? budget.hotels ?? budget.lodging ?? budget.stay ?? 0);
+  const food = parseCost(budget.food ?? budget.meals ?? budget.dining ?? budget.foodAndDining ?? budget.food_and_dining ?? 0);
+  const activities = parseCost(budget.activities ?? budget.attractions ?? budget.sightseeing ?? budget.entertainment ?? 0);
+  const transportation = parseCost(budget.transportation ?? budget.transport ?? budget.localTransport ?? budget.local_transport ?? budget.localTransportation ?? 0);
+  const total = parseCost(budget.total ?? budget.totalBudget ?? budget.total_budget ?? budget.grandTotal ?? budget.totalEstimatedBudget ?? 0)
     || (flights + accommodation + food + activities + transportation);
 
   return { flights, accommodation, food, activities, transportation, total };
@@ -150,7 +169,18 @@ function normalizeAiResponse(aiResult: any): any {
 
   const packingList = normalizePackingList(aiResult.packingList || aiResult.packing_list || aiResult.packingChecklist || aiResult.packing || []);
 
-  return { itinerary, budget, hotels, packingList };
+  const rawTransit = aiResult.transitExpenses || aiResult.transit || {};
+  const transitExpenses = {
+    flight: parseCost(rawTransit.flight ?? rawTransit.flights ?? 0),
+    train: parseCost(rawTransit.train ?? 0),
+    bus: parseCost(rawTransit.bus ?? 0),
+    car: parseCost(rawTransit.car ?? rawTransit.carRental ?? 0),
+    visa: parseCost(rawTransit.visa ?? rawTransit.visaFee ?? 0),
+    visaRequired: typeof rawTransit.visaRequired === "boolean" ? rawTransit.visaRequired : (!!(rawTransit.visaRequired || rawTransit.visa_required || false)),
+    notes: rawTransit.notes || rawTransit.details || "",
+  };
+
+  return { itinerary, budget, hotels, packingList, transitExpenses };
 }
 
 /**
@@ -162,10 +192,10 @@ export const createTrip = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { destination, days, budgetType, interests } = req.body;
+    const { destination, startingPoint, currency = "INR", days, budgetType, interests } = req.body;
 
     // Validate input
-    if (!destination || !days || !budgetType || !interests?.length) {
+    if (!destination || !startingPoint || !days || !budgetType || !interests?.length) {
       res.status(400).json({ message: "All trip fields are required." });
       return;
     }
@@ -180,6 +210,8 @@ export const createTrip = async (
     // Call Gemini LLM to generate the trip
     const aiResult = await generateFullTrip(
       destination,
+      startingPoint,
+      currency,
       days,
       budgetType,
       interests
@@ -195,6 +227,8 @@ export const createTrip = async (
     const trip = await Trip.create({
       userId: req.user!.id,
       destination,
+      startingPoint,
+      currency,
       days,
       budgetType,
       interests,
@@ -202,6 +236,7 @@ export const createTrip = async (
       budget: normalized.budget,
       hotels: normalized.hotels,
       packingList: normalized.packingList,
+      transitExpenses: normalized.transitExpenses,
     });
 
     res.status(201).json({ message: "Trip created successfully.", trip });
@@ -224,7 +259,7 @@ export const getTrips = async (
   try {
     const trips = await Trip.find({ userId: req.user!.id })
       .sort({ createdAt: -1 })
-      .select("destination days budgetType interests createdAt");
+      .select("destination startingPoint currency days budgetType interests createdAt");
 
     res.status(200).json({ trips });
   } catch (error) {
