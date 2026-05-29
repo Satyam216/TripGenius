@@ -116,13 +116,6 @@ export default function HomePage() {
           ═══════════════════════════════════════════════════════════ */}
       <section className="relative z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-4xl mx-auto auth-card-enter">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/8 border border-white/10 backdrop-blur-md mb-8">
-            <Sparkles className="w-4 h-4 text-yellow-400" />
-            <span className="text-sm font-semibold text-white/80">
-              Powered by Google Gemini AI
-            </span>
-          </div>
 
           {/* Heading */}
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold mb-6 leading-[1.1] tracking-tight text-white">
@@ -176,7 +169,7 @@ export default function HomePage() {
             </div>
             <div className="flex items-center gap-2 text-white/35">
               <Users className="w-4 h-4" />
-              <span className="text-xs font-semibold">10K+ Travelers</span>
+              <span className="text-xs font-semibold">Happy Travelers</span>
             </div>
             <div className="flex items-center gap-2 text-white/35">
               <Zap className="w-4 h-4" />
@@ -196,28 +189,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════
-          STATS BAR
-          ═══════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 py-12 border-y border-white/5">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/5 border border-white/8 mb-3">
-                  <stat.icon className="w-5 h-5 text-white/40" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-white mb-1">
-                  {stat.value}
-                </div>
-                <div className="text-xs sm:text-sm font-medium text-white/35">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ═══════════════════════════════════════════════════════════
           FEATURES SECTION
