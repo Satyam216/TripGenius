@@ -271,463 +271,459 @@ export default function TripDetailPage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Header */}
-      <div className="animate-fade-in mb-8">
-        <button
-          onClick={() => router.push("/dashboard")}
-          className="text-text-muted hover:text-primary text-sm font-bold mb-4 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Dashboard</span>
-        </button>
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-1.5 text-xs font-bold text-accent uppercase tracking-wider mb-1">
-              <MapPin className="w-3.5 h-3.5" />
-              <span>{trip.startingPoint || "Origin"}</span>
-              <span className="text-primary font-bold">➔</span>
-              <span>{trip.destination}</span>
+    <div className="w-full min-h-[calc(100vh-4rem)] bg-gradient-to-br from-[#0c2e35] via-[#061e22] to-[#041518] -mt-16 pt-24 pb-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="animate-fade-in mb-8">
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="text-white/60 hover:text-white hover:underline text-sm font-bold mb-4 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Dashboard</span>
+          </button>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-1.5 text-xs font-bold text-accent-light uppercase tracking-wider mb-1">
+                <MapPin className="w-3.5 h-3.5" />
+                <span>{trip.startingPoint || "Origin"}</span>
+                <span className="text-primary-light font-bold">➔</span>
+                <span>{trip.destination}</span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">{trip.destination}</h1>
+              <p className="text-white/70 mt-1 text-sm font-bold">
+                {trip.days} day{trip.days > 1 ? "s" : ""} · {trip.budgetType} Budget ·{" "}
+                {trip.interests.join(", ")}
+              </p>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-text">{trip.destination}</h1>
-            <p className="text-text-muted mt-1 text-sm font-bold">
-              {trip.days} day{trip.days > 1 ? "s" : ""} · {trip.budgetType} Budget ·{" "}
-              {trip.interests.join(", ")}
-            </p>
+            <button
+              onClick={handleExportCalendar}
+              className="btn-secondary py-2.5 px-5 text-sm font-bold flex items-center gap-2 cursor-pointer"
+            >
+              <Calendar className="w-4 h-4" />
+              <span>Export to Calendar</span>
+            </button>
           </div>
-          <button
-            onClick={handleExportCalendar}
-            className="btn-secondary py-2.5 px-5 text-sm font-bold flex items-center gap-2 cursor-pointer"
-          >
-            <Calendar className="w-4 h-4" />
-            <span>Export to Calendar</span>
-          </button>
         </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-8 overflow-x-auto pb-2 border-b border-surface-lighter animate-fade-in scrollbar-none">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-5 py-3 rounded-xl text-sm font-extrabold whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center gap-2 border ${
-              activeTab === tab.id
-                ? "bg-primary/8 text-primary border-primary/45 shadow-sm"
-                : "bg-surface text-text-muted hover:bg-surface-light border-surface-lighter hover:text-text"
-            }`}
-          >
-            {tab.icon}
-            <span>{tab.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* --- ITINERARY TAB --- */}
-      {activeTab === "itinerary" && (
-        <div className="space-y-4 stagger-children">
-          {trip.itinerary.map((day) => (
-            <div key={day.day} className="glass-card overflow-hidden border border-surface-lighter hover:border-primary/30">
-              {/* Day Header (Accordion Toggle) */}
-              <button
-                onClick={() => setExpandedDay(expandedDay === day.day ? null : day.day)}
-                className="w-full flex items-center justify-between p-6 text-left hover:bg-surface-light/40 transition-colors cursor-pointer"
-              >
-                <div className="flex items-center gap-4">
-                  <span className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-extrabold text-lg border border-primary/20">
-                    {day.day}
-                  </span>
-                  <div>
-                    <h3 className="text-lg font-black text-text">Day {day.day}: {day.title}</h3>
-                    <p className="text-text-muted text-xs font-bold mt-0.5 flex items-center gap-3">
-                      <span>{day.activities.length} Activities</span>
-                      <span className="text-surface-lighter font-normal">|</span>
-                      <span className="text-success font-extrabold flex items-center">
-                        <span className="mr-0.5">{symbol}</span>
-                        {day.activities.reduce((sum, a) => sum + a.estimatedCost, 0).toLocaleString()} Est.
-                      </span>
-                    </p>
-                  </div>
-                </div>
-                <ChevronDown
-                  className={`w-5 h-5 text-text-muted transition-transform duration-300 ${
-                    expandedDay === day.day ? "rotate-180 text-primary" : ""
-                  }`}
-                />
-              </button>
-
-              {/* Day Content (Expanded) */}
-              {expandedDay === day.day && (
-                <div className="px-6 pb-6 animate-fade-in">
-                  <div className="border-t border-surface-light pt-4">
-                    {/* Activities */}
-                    <div className="space-y-3">
-                      {day.activities.map((activity) => (
-                        <div
-                          key={activity._id}
-                          className="flex items-start gap-4 p-4 rounded-xl bg-surface-light/40 border border-surface-lighter group hover:border-accent/40 transition-all"
-                        >
-                          <span className="text-xs font-bold text-primary bg-primary/8 border border-primary/20 px-2.5 py-1 rounded-lg whitespace-nowrap mt-0.5 flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5" />
-                            {activity.time}
-                          </span>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-extrabold text-text">{activity.activity}</h4>
-                            <p className="text-text-muted text-sm mt-1 leading-relaxed font-medium">{activity.description}</p>
-                            <span className="text-success text-sm font-black mt-2 inline-flex items-center bg-success/8 px-2 py-0.5 rounded border border-success/15">
-                              <span>{symbol}</span>
-                              {activity.estimatedCost.toLocaleString()}
-                            </span>
-                          </div>
-                          <button
-                            onClick={() => handleRemoveActivity(day.day, activity._id)}
-                            disabled={removingActivity === activity._id}
-                            className="opacity-0 group-hover:opacity-100 text-danger hover:bg-danger/10 border border-danger/20 transition-all text-xs p-1.5 rounded-lg cursor-pointer shrink-0"
-                            title="Remove activity"
-                          >
-                            {removingActivity === activity._id ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <X className="w-3.5 h-3.5" />
-                            )}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Day Actions */}
-                    <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-surface-light">
-                      <button
-                        onClick={() => handleAddActivity(day.day)}
-                        disabled={addingActivity === day.day}
-                        className="btn-secondary text-xs py-2 px-4 cursor-pointer font-bold flex items-center gap-1.5"
-                      >
-                        {addingActivity === day.day ? (
-                          <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
-                            <span>Adding...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>Suggest New Activity</span>
-                          </>
-                        )}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowRegenerateModal(day.day);
-                          setRegeneratePrompt("");
-                        }}
-                        disabled={regeneratingDay === day.day}
-                        className="btn-secondary text-xs py-2 px-4 cursor-pointer font-bold flex items-center gap-1.5"
-                      >
-                        {regeneratingDay === day.day ? (
-                          <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
-                            <span>Regenerating...</span>
-                          </>
-                        ) : (
-                          <>
-                            <RefreshCw className="w-3.5 h-3.5" />
-                            <span>Regenerate Day Plan</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+        {/* Tabs */}
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-2 border-b border-white/10 animate-fade-in scrollbar-none">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-5 py-3 rounded-xl text-sm font-extrabold whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center gap-2 border ${activeTab === tab.id
+                ? "bg-primary text-white border-primary shadow-lg shadow-primary/25"
+                : "bg-white/8 backdrop-blur-md text-white/70 hover:text-white border-white/8 hover:bg-white/12"
+                }`}
+            >
+              {tab.icon}
+              <span>{tab.label}</span>
+            </button>
           ))}
         </div>
-      )}
 
-      {/* --- BUDGET TAB --- */}
-      {activeTab === "budget" && (
-        <div className="animate-fade-in">
-          {/* Total */}
-          <div className="glass-card p-8 mb-6 text-center border-2 border-primary/20 bg-white/95">
-            <p className="text-text-muted text-xs font-black uppercase tracking-widest mb-2.5">Total Scaled Budget</p>
-            <p className="text-5xl font-black text-primary">{symbol}{trip.budget.total.toLocaleString()}</p>
-            <p className="text-text-muted mt-2 text-sm font-bold">
-              Scaled to {trip.currency || "INR"} pricing for {trip.days} days
-            </p>
-          </div>
-
-          {/* Breakdown */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-children">
-            {budgetCategories.map((cat) => {
-              const amount = trip.budget[cat.key];
-              const percentage = trip.budget.total > 0 ? (amount / trip.budget.total) * 100 : 0;
-              return (
-                <div key={cat.key} className="glass-card p-6 border border-surface-lighter hover:border-primary/25">
-                  <div className="flex items-center gap-3.5 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-surface-light border border-surface-lighter flex items-center justify-center shrink-0">
-                      {cat.icon}
-                    </div>
+        {/* --- ITINERARY TAB --- */}
+        {activeTab === "itinerary" && (
+          <div className="space-y-4 stagger-children">
+            {trip.itinerary.map((day) => (
+              <div key={day.day} className="glass-card overflow-hidden border border-surface-lighter hover:border-primary/30">
+                {/* Day Header (Accordion Toggle) */}
+                <button
+                  onClick={() => setExpandedDay(expandedDay === day.day ? null : day.day)}
+                  className="w-full flex items-center justify-between p-6 text-left hover:bg-surface-light/40 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-extrabold text-lg border border-primary/20">
+                      {day.day}
+                    </span>
                     <div>
-                      <p className="text-text-muted text-xs font-bold uppercase tracking-wider">{cat.label}</p>
-                      <p className="text-xl font-black mt-0.5">{symbol}{amount.toLocaleString()}</p>
+                      <h3 className="text-lg font-black text-text">Day {day.day}: {day.title}</h3>
+                      <p className="text-text-muted text-xs font-bold mt-0.5 flex items-center gap-3">
+                        <span>{day.activities.length} Activities</span>
+                        <span className="text-surface-lighter font-normal">|</span>
+                        <span className="text-success font-extrabold flex items-center">
+                          <span className="mr-0.5">{symbol}</span>
+                          {day.activities.reduce((sum, a) => sum + a.estimatedCost, 0).toLocaleString()} Est.
+                        </span>
+                      </p>
                     </div>
                   </div>
-                  <div className="w-full h-2 bg-surface-light rounded-full overflow-hidden">
+                  <ChevronDown
+                    className={`w-5 h-5 text-text-muted transition-transform duration-300 ${expandedDay === day.day ? "rotate-180 text-primary" : ""
+                      }`}
+                  />
+                </button>
+
+                {/* Day Content (Expanded) */}
+                {expandedDay === day.day && (
+                  <div className="px-6 pb-6 animate-fade-in">
+                    <div className="border-t border-surface-light pt-4">
+                      {/* Activities */}
+                      <div className="space-y-3">
+                        {day.activities.map((activity) => (
+                          <div
+                            key={activity._id}
+                            className="flex items-start gap-4 p-4 rounded-xl bg-surface-light/40 border border-surface-lighter group hover:border-accent/40 transition-all"
+                          >
+                            <span className="text-xs font-bold text-primary bg-primary/8 border border-primary/20 px-2.5 py-1 rounded-lg whitespace-nowrap mt-0.5 flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5" />
+                              {activity.time}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-extrabold text-text">{activity.activity}</h4>
+                              <p className="text-text-muted text-sm mt-1 leading-relaxed font-medium">{activity.description}</p>
+                              <span className="text-success text-sm font-black mt-2 inline-flex items-center bg-success/8 px-2 py-0.5 rounded border border-success/15">
+                                <span>{symbol}</span>
+                                {activity.estimatedCost.toLocaleString()}
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => handleRemoveActivity(day.day, activity._id)}
+                              disabled={removingActivity === activity._id}
+                              className="opacity-0 group-hover:opacity-100 text-danger hover:bg-danger/10 border border-danger/20 transition-all text-xs p-1.5 rounded-lg cursor-pointer shrink-0"
+                              title="Remove activity"
+                            >
+                              {removingActivity === activity._id ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <X className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Day Actions */}
+                      <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-surface-light">
+                        <button
+                          onClick={() => handleAddActivity(day.day)}
+                          disabled={addingActivity === day.day}
+                          className="btn-secondary text-xs py-2 px-4 cursor-pointer font-bold flex items-center gap-1.5"
+                        >
+                          {addingActivity === day.day ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
+                              <span>Adding...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>Suggest New Activity</span>
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowRegenerateModal(day.day);
+                            setRegeneratePrompt("");
+                          }}
+                          disabled={regeneratingDay === day.day}
+                          className="btn-secondary text-xs py-2 px-4 cursor-pointer font-bold flex items-center gap-1.5"
+                        >
+                          {regeneratingDay === day.day ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
+                              <span>Regenerating...</span>
+                            </>
+                          ) : (
+                            <>
+                              <RefreshCw className="w-3.5 h-3.5" />
+                              <span>Regenerate Day Plan</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* --- BUDGET TAB --- */}
+        {activeTab === "budget" && (
+          <div className="animate-fade-in">
+            {/* Total */}
+            <div className="glass-card p-8 mb-6 text-center border-2 border-primary/20 bg-white/95">
+              <p className="text-text-muted text-xs font-black uppercase tracking-widest mb-2.5">Total Scaled Budget</p>
+              <p className="text-5xl font-black text-primary">{symbol}{trip.budget.total.toLocaleString()}</p>
+              <p className="text-text-muted mt-2 text-sm font-bold">
+                Scaled to {trip.currency || "INR"} pricing for {trip.days} days
+              </p>
+            </div>
+
+            {/* Breakdown */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-children">
+              {budgetCategories.map((cat) => {
+                const amount = trip.budget[cat.key];
+                const percentage = trip.budget.total > 0 ? (amount / trip.budget.total) * 100 : 0;
+                return (
+                  <div key={cat.key} className="glass-card p-6 border border-surface-lighter hover:border-primary/25">
+                    <div className="flex items-center gap-3.5 mb-4">
+                      <div className="w-10 h-10 rounded-xl bg-surface-light border border-surface-lighter flex items-center justify-center shrink-0">
+                        {cat.icon}
+                      </div>
+                      <div>
+                        <p className="text-text-muted text-xs font-bold uppercase tracking-wider">{cat.label}</p>
+                        <p className="text-xl font-black mt-0.5">{symbol}{amount.toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <div className="w-full h-2 bg-surface-light rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-700"
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-text-muted text-[10px] font-bold mt-2">{percentage.toFixed(1)}% of total</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* --- TRANSIT TAB --- */}
+        {activeTab === "transit" && (
+          <div className="space-y-6 animate-fade-in animate-duration-300">
+            {/* Main Transit Details Header */}
+            <div className="glass-card p-6 border-l-4 border-l-primary flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/95">
+              <div>
+                <h3 className="text-xl font-black text-text">Estimated Transit & Visa Expenses</h3>
+                <p className="text-text-muted text-xs font-bold mt-1">
+                  Cost estimates from {trip.startingPoint || "Origin"} to {trip.destination} scaled in {trip.currency || "INR"}
+                </p>
+              </div>
+              <div className={`px-4.5 py-2.5 rounded-xl border font-black text-xs uppercase tracking-wider flex items-center gap-2 ${trip.transitExpenses?.visaRequired
+                ? "bg-primary/10 text-primary border-primary/35"
+                : "bg-success/10 text-success border-success/35"
+                }`}>
+                <FileText className="w-4 h-4 shrink-0" />
+                <span>{trip.transitExpenses?.visaRequired ? "Visa Required" : "No Visa Required / Visa Free"}</span>
+              </div>
+            </div>
+
+            {/* Transit Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 stagger-children">
+              {/* Flights */}
+              <div className="glass-card p-5 border border-surface-lighter flex flex-col justify-between hover:border-primary/45 transition-all bg-white/90">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                    <Plane className="w-5 h-5" />
+                  </div>
+                  <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Flight</span>
+                </div>
+                <div>
+                  <p className="text-2xl font-black text-text">{symbol}{(trip.transitExpenses?.flight ?? 0).toLocaleString()}</p>
+                  <p className="text-text-muted text-[10px] font-bold mt-1">Estimated airfare</p>
+                </div>
+              </div>
+
+              {/* Train */}
+              <div className="glass-card p-5 border border-surface-lighter flex flex-col justify-between hover:border-accent/45 transition-all bg-white/90">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="w-9 h-9 rounded-lg bg-accent/15 border border-accent/30 flex items-center justify-center text-accent">
+                    <Train className="w-5 h-5" />
+                  </div>
+                  <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Train</span>
+                </div>
+                <div>
+                  <p className="text-2xl font-black text-text">{symbol}{(trip.transitExpenses?.train ?? 0).toLocaleString()}</p>
+                  <p className="text-text-muted text-[10px] font-bold mt-1">Estimated rail fare</p>
+                </div>
+              </div>
+
+              {/* Bus */}
+              <div className="glass-card p-5 border border-surface-lighter flex flex-col justify-between hover:border-success/45 transition-all bg-white/90">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="w-9 h-9 rounded-lg bg-success/10 border border-success/20 flex items-center justify-center text-success">
+                    <Bus className="w-5 h-5" />
+                  </div>
+                  <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Bus</span>
+                </div>
+                <div>
+                  <p className="text-2xl font-black text-text">{symbol}{(trip.transitExpenses?.bus ?? 0).toLocaleString()}</p>
+                  <p className="text-text-muted text-[10px] font-bold mt-1">Intercity coach fare</p>
+                </div>
+              </div>
+
+              {/* Car/Cab */}
+              <div className="glass-card p-5 border border-surface-lighter flex flex-col justify-between hover:border-primary/45 transition-all bg-white/90">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                    <Car className="w-5 h-5" />
+                  </div>
+                  <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Car / Cab</span>
+                </div>
+                <div>
+                  <p className="text-2xl font-black text-text">{symbol}{(trip.transitExpenses?.car ?? 0).toLocaleString()}</p>
+                  <p className="text-text-muted text-[10px] font-bold mt-1">Rental, fuel, or cab</p>
+                </div>
+              </div>
+
+              {/* Visa application */}
+              <div className="glass-card p-5 border border-surface-lighter flex flex-col justify-between hover:border-accent/45 transition-all bg-white/90">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="w-9 h-9 rounded-lg bg-accent/15 border border-accent/30 flex items-center justify-center text-accent">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Visa Fee</span>
+                </div>
+                <div>
+                  <p className="text-2xl font-black text-text">{symbol}{(trip.transitExpenses?.visa ?? 0).toLocaleString()}</p>
+                  <p className="text-text-muted text-[10px] font-bold mt-1">Application fees</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Visa Notes & Travel Information */}
+            {trip.transitExpenses?.notes && (
+              <div className="glass-card p-6 border-l-4 border-l-accent flex items-start gap-4 bg-white/95">
+                <Info className="w-6 h-6 text-accent shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-extrabold text-text">Important Entry & Travel Requirements</h4>
+                  <p className="text-text-muted text-sm mt-1.5 leading-relaxed font-semibold">
+                    {trip.transitExpenses.notes}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* --- HOTELS TAB --- */}
+        {activeTab === "hotels" && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 stagger-children">
+            {trip.hotels.map((hotel) => (
+              <div
+                key={hotel._id}
+                className={`glass-card p-6 border-2 transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between ${tierStyles[hotel.tier] || ""}`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className={`text-[10px] font-extrabold px-3 py-1 rounded-full border uppercase tracking-wider ${tierBadge[hotel.tier] || ""}`}>
+                      {hotel.tier}
+                    </span>
+                    <div className="flex items-center gap-1 bg-surface-light border border-surface-lighter px-2.5 py-1 rounded-lg">
+                      <Star className="w-3.5 h-3.5 text-accent fill-accent" />
+                      <span className="font-bold text-xs text-text">{hotel.rating}</span>
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold mb-2.5 text-text">{hotel.name}</h3>
+                  <p className="text-text-muted text-sm mb-6 leading-relaxed font-medium">{hotel.description}</p>
+                </div>
+                <div className="pt-4 border-t border-surface-light mt-4">
+                  <p className="text-2xl font-black text-text">
+                    {symbol}{hotel.pricePerNight.toLocaleString()}
+                    <span className="text-text-muted text-xs font-bold uppercase tracking-wider"> / Night</span>
+                  </p>
+                  <p className="text-text-muted text-xs font-bold mt-1">
+                    Est. Total: {symbol}{(hotel.pricePerNight * trip.days).toLocaleString()} for {trip.days} nights
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* --- PACKING LIST TAB --- */}
+        {activeTab === "packing" && (
+          <div className="space-y-4 stagger-children">
+            {trip.packingList.map((category, catIdx) => {
+              const packedCount = category.items.filter((i) => i.packed).length;
+              const progressWidth = category.items.length > 0 ? (packedCount / category.items.length) * 100 : 0;
+              return (
+                <div key={category._id} className="glass-card p-6 border border-surface-lighter">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-text">{category.category}</h3>
+                    <span className="text-xs font-bold text-text-muted bg-surface-light px-2.5 py-1 rounded-lg border border-surface-lighter">
+                      {packedCount}/{category.items.length} Packed
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-surface-light rounded-full overflow-hidden mb-4">
                     <div
-                      className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-700"
-                      style={{ width: `${percentage}%` }}
+                      className="h-full bg-gradient-to-r from-success to-success-light rounded-full transition-all duration-500"
+                      style={{
+                        width: `${progressWidth}%`,
+                      }}
                     ></div>
                   </div>
-                  <p className="text-text-muted text-[10px] font-bold mt-2">{percentage.toFixed(1)}% of total</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {category.items.map((item, itemIdx) => (
+                      <label
+                        key={item._id}
+                        className={`flex items-center gap-3 p-3.5 rounded-xl cursor-pointer transition-all duration-200 ${item.packed
+                          ? "bg-success/5 border border-success/20"
+                          : "bg-surface-light/40 border border-surface-lighter hover:border-surface-light"
+                          }`}
+                      >
+                        <div className="relative flex items-center justify-center shrink-0">
+                          <input
+                            type="checkbox"
+                            checked={item.packed}
+                            onChange={() => handleTogglePacking(catIdx, itemIdx, item.packed)}
+                            className="sr-only"
+                          />
+                          <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${item.packed
+                            ? "bg-success border-success text-white"
+                            : "border-surface-lighter bg-white"
+                            }`}>
+                            {item.packed && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                          </div>
+                        </div>
+                        <span
+                          className={`text-sm font-semibold ${item.packed ? "line-through text-text-muted" : "text-text"
+                            }`}
+                        >
+                          {item.name}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               );
             })}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* --- TRANSIT TAB --- */}
-      {activeTab === "transit" && (
-        <div className="space-y-6 animate-fade-in animate-duration-300">
-          {/* Main Transit Details Header */}
-          <div className="glass-card p-6 border-l-4 border-l-primary flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/95">
-            <div>
-              <h3 className="text-xl font-black text-text">Estimated Transit & Visa Expenses</h3>
-              <p className="text-text-muted text-xs font-bold mt-1">
-                Cost estimates from {trip.startingPoint || "Origin"} to {trip.destination} scaled in {trip.currency || "INR"}
+        {/* Regenerate Day Modal */}
+        {showRegenerateModal !== null && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <div className="glass-card p-8 max-w-lg w-full animate-fade-in border border-primary/20 shadow-md">
+              <h3 className="text-xl font-bold mb-1 flex items-center gap-2">
+                <RefreshCw className="w-5 h-5 text-primary" />
+                <span>Adjust Day {showRegenerateModal}</span>
+              </h3>
+              <p className="text-text-muted text-xs font-semibold mb-4 leading-relaxed">
+                Describe what changes you want on Day {showRegenerateModal}. scaled to {trip.currency || "INR"}.
               </p>
-            </div>
-            <div className={`px-4.5 py-2.5 rounded-xl border font-black text-xs uppercase tracking-wider flex items-center gap-2 ${
-              trip.transitExpenses?.visaRequired
-                ? "bg-primary/10 text-primary border-primary/35"
-                : "bg-success/10 text-success border-success/35"
-            }`}>
-              <FileText className="w-4 h-4 shrink-0" />
-              <span>{trip.transitExpenses?.visaRequired ? "Visa Required" : "No Visa Required / Visa Free"}</span>
-            </div>
-          </div>
-
-          {/* Transit Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 stagger-children">
-            {/* Flights */}
-            <div className="glass-card p-5 border border-surface-lighter flex flex-col justify-between hover:border-primary/45 transition-all bg-white/90">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-                  <Plane className="w-5 h-5" />
-                </div>
-                <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Flight</span>
-              </div>
-              <div>
-                <p className="text-2xl font-black text-text">{symbol}{(trip.transitExpenses?.flight ?? 0).toLocaleString()}</p>
-                <p className="text-text-muted text-[10px] font-bold mt-1">Estimated airfare</p>
-              </div>
-            </div>
-
-            {/* Train */}
-            <div className="glass-card p-5 border border-surface-lighter flex flex-col justify-between hover:border-accent/45 transition-all bg-white/90">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-9 h-9 rounded-lg bg-accent/15 border border-accent/30 flex items-center justify-center text-accent">
-                  <Train className="w-5 h-5" />
-                </div>
-                <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Train</span>
-              </div>
-              <div>
-                <p className="text-2xl font-black text-text">{symbol}{(trip.transitExpenses?.train ?? 0).toLocaleString()}</p>
-                <p className="text-text-muted text-[10px] font-bold mt-1">Estimated rail fare</p>
-              </div>
-            </div>
-
-            {/* Bus */}
-            <div className="glass-card p-5 border border-surface-lighter flex flex-col justify-between hover:border-success/45 transition-all bg-white/90">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-9 h-9 rounded-lg bg-success/10 border border-success/20 flex items-center justify-center text-success">
-                  <Bus className="w-5 h-5" />
-                </div>
-                <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Bus</span>
-              </div>
-              <div>
-                <p className="text-2xl font-black text-text">{symbol}{(trip.transitExpenses?.bus ?? 0).toLocaleString()}</p>
-                <p className="text-text-muted text-[10px] font-bold mt-1">Intercity coach fare</p>
-              </div>
-            </div>
-
-            {/* Car/Cab */}
-            <div className="glass-card p-5 border border-surface-lighter flex flex-col justify-between hover:border-primary/45 transition-all bg-white/90">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-                  <Car className="w-5 h-5" />
-                </div>
-                <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Car / Cab</span>
-              </div>
-              <div>
-                <p className="text-2xl font-black text-text">{symbol}{(trip.transitExpenses?.car ?? 0).toLocaleString()}</p>
-                <p className="text-text-muted text-[10px] font-bold mt-1">Rental, fuel, or cab</p>
-              </div>
-            </div>
-
-            {/* Visa application */}
-            <div className="glass-card p-5 border border-surface-lighter flex flex-col justify-between hover:border-accent/45 transition-all bg-white/90">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-9 h-9 rounded-lg bg-accent/15 border border-accent/30 flex items-center justify-center text-accent">
-                  <FileText className="w-5 h-5" />
-                </div>
-                <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Visa Fee</span>
-              </div>
-              <div>
-                <p className="text-2xl font-black text-text">{symbol}{(trip.transitExpenses?.visa ?? 0).toLocaleString()}</p>
-                <p className="text-text-muted text-[10px] font-bold mt-1">Application fees</p>
+              <textarea
+                value={regeneratePrompt}
+                onChange={(e) => setRegeneratePrompt(e.target.value)}
+                placeholder="e.g. Focus on local temples and shopping spots"
+                className="input-field min-h-[120px] resize-none mb-5 font-semibold text-sm leading-relaxed"
+                autoFocus
+              />
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowRegenerateModal(null)}
+                  className="btn-secondary py-2.5 px-5 font-bold text-xs cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleRegenerateDay(showRegenerateModal)}
+                  disabled={!regeneratePrompt.trim()}
+                  className="btn-primary py-2.5 px-5 font-bold text-xs cursor-pointer"
+                >
+                  Regenerate Plan
+                </button>
               </div>
             </div>
           </div>
-
-          {/* Visa Notes & Travel Information */}
-          {trip.transitExpenses?.notes && (
-            <div className="glass-card p-6 border-l-4 border-l-accent flex items-start gap-4 bg-white/95">
-              <Info className="w-6 h-6 text-accent shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-extrabold text-text">Important Entry & Travel Requirements</h4>
-                <p className="text-text-muted text-sm mt-1.5 leading-relaxed font-semibold">
-                  {trip.transitExpenses.notes}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* --- HOTELS TAB --- */}
-      {activeTab === "hotels" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 stagger-children">
-          {trip.hotels.map((hotel) => (
-            <div
-              key={hotel._id}
-              className={`glass-card p-6 border-2 transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between ${tierStyles[hotel.tier] || ""}`}
-            >
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className={`text-[10px] font-extrabold px-3 py-1 rounded-full border uppercase tracking-wider ${tierBadge[hotel.tier] || ""}`}>
-                    {hotel.tier}
-                  </span>
-                  <div className="flex items-center gap-1 bg-surface-light border border-surface-lighter px-2.5 py-1 rounded-lg">
-                    <Star className="w-3.5 h-3.5 text-accent fill-accent" />
-                    <span className="font-bold text-xs text-text">{hotel.rating}</span>
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold mb-2.5 text-text">{hotel.name}</h3>
-                <p className="text-text-muted text-sm mb-6 leading-relaxed font-medium">{hotel.description}</p>
-              </div>
-              <div className="pt-4 border-t border-surface-light mt-4">
-                <p className="text-2xl font-black text-text">
-                  {symbol}{hotel.pricePerNight.toLocaleString()}
-                  <span className="text-text-muted text-xs font-bold uppercase tracking-wider"> / Night</span>
-                </p>
-                <p className="text-text-muted text-xs font-bold mt-1">
-                  Est. Total: {symbol}{(hotel.pricePerNight * trip.days).toLocaleString()} for {trip.days} nights
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* --- PACKING LIST TAB --- */}
-      {activeTab === "packing" && (
-        <div className="space-y-4 stagger-children">
-          {trip.packingList.map((category, catIdx) => {
-            const packedCount = category.items.filter((i) => i.packed).length;
-            const progressWidth = category.items.length > 0 ? (packedCount / category.items.length) * 100 : 0;
-            return (
-              <div key={category._id} className="glass-card p-6 border border-surface-lighter">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-text">{category.category}</h3>
-                  <span className="text-xs font-bold text-text-muted bg-surface-light px-2.5 py-1 rounded-lg border border-surface-lighter">
-                    {packedCount}/{category.items.length} Packed
-                  </span>
-                </div>
-                <div className="w-full h-1.5 bg-surface-light rounded-full overflow-hidden mb-4">
-                  <div
-                    className="h-full bg-gradient-to-r from-success to-success-light rounded-full transition-all duration-500"
-                    style={{
-                      width: `${progressWidth}%`,
-                    }}
-                  ></div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {category.items.map((item, itemIdx) => (
-                    <label
-                      key={item._id}
-                      className={`flex items-center gap-3 p-3.5 rounded-xl cursor-pointer transition-all duration-200 ${
-                        item.packed
-                          ? "bg-success/5 border border-success/20"
-                          : "bg-surface-light/40 border border-surface-lighter hover:border-surface-light"
-                      }`}
-                    >
-                      <div className="relative flex items-center justify-center shrink-0">
-                        <input
-                          type="checkbox"
-                          checked={item.packed}
-                          onChange={() => handleTogglePacking(catIdx, itemIdx, item.packed)}
-                          className="sr-only"
-                        />
-                        <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
-                          item.packed
-                            ? "bg-success border-success text-white"
-                            : "border-surface-lighter bg-white"
-                        }`}>
-                          {item.packed && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                        </div>
-                      </div>
-                      <span
-                        className={`text-sm font-semibold ${
-                          item.packed ? "line-through text-text-muted" : "text-text"
-                        }`}
-                      >
-                        {item.name}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Regenerate Day Modal */}
-      {showRegenerateModal !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="glass-card p-8 max-w-lg w-full animate-fade-in border border-primary/20 shadow-md">
-            <h3 className="text-xl font-bold mb-1 flex items-center gap-2">
-              <RefreshCw className="w-5 h-5 text-primary" />
-              <span>Adjust Day {showRegenerateModal}</span>
-            </h3>
-            <p className="text-text-muted text-xs font-semibold mb-4 leading-relaxed">
-              Describe what changes you want on Day {showRegenerateModal}. scaled to {trip.currency || "INR"}.
-            </p>
-            <textarea
-              value={regeneratePrompt}
-              onChange={(e) => setRegeneratePrompt(e.target.value)}
-              placeholder="e.g. Focus on local temples and shopping spots"
-              className="input-field min-h-[120px] resize-none mb-5 font-semibold text-sm leading-relaxed"
-              autoFocus
-            />
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setShowRegenerateModal(null)}
-                className="btn-secondary py-2.5 px-5 font-bold text-xs cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleRegenerateDay(showRegenerateModal)}
-                disabled={!regeneratePrompt.trim()}
-                className="btn-primary py-2.5 px-5 font-bold text-xs cursor-pointer"
-              >
-                Regenerate Plan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

@@ -44,6 +44,9 @@ export const authApi = {
   login: (email: string, password: string) =>
     apiRequest("/auth/login", { method: "POST", body: { email, password } }),
 
+  forgotPassword: (email: string, password: string) =>
+    apiRequest("/auth/forgot-password", { method: "POST", body: { email, password } }),
+
   getMe: (token: string) =>
     apiRequest("/auth/me", { token }),
 };

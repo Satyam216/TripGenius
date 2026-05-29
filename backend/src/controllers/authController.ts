@@ -127,3 +127,38 @@ export const getMe = async (req: any, res: Response): Promise<void> => {
     res.status(500).json({ message: "Internal server error." });
   }
 };
+
+/**
+ * POST /api/auth/forgot-password
+ * Reset user password
+ */
+export const forgotPassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email, password } = req.body;
+
+    // Validate input
+    if (!email || !password) {
+      res.status(400).json({ message: "Email and password are required." });
+      return;
+    }
+
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      res.status(404).json({ message: "User email is incorrect" });
+      return;
+    }
+
+    // Update password (pre-save hook will hash it)
+    user.password = password;
+    await user.save();
+
+    res.status(200).json({
+      message: "Password updated successfully.",
+    });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
